@@ -1,0 +1,14 @@
+# Python
+
+__pycache__/
+venv/
+.venv/
+env/
+.pth
+.pt
+*.pyc
+
+# Data and Models
+data/*
+models/*
+results/*
