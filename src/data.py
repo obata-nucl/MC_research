@@ -10,30 +10,37 @@ SETTINGS = {
 }
 CONFIG = load_config()
 
-def load_raw_data(n_min: int, n_max: int, n_step: int) -> dict[int, np.ndarray]:
+def load_raw_data(p_min: int, p_max: int, n_min: int, n_max: int, p_step: int,n_step: int) -> dict[int, np.ndarray]:
     raw_dir = CONFIG["paths"]["raw_dir"]
     data = {}
-    for n in range(n_min, n_max + 1, n_step):
-        file_path = raw_dir / f"{n}.csv"
-        try:
-            data[n] = np.loadtxt(file_path, delimiter=',', dtype=np.float32)
-        except Exception as e:
-            print(f"Error loading data for n={n} from {file_path}: {e}")
-            data[n] = None
+    for p in range(p_min, p_max + 1, p_step):
+        for n in range(n_min, n_max + 1, n_step):
+            file_path = raw_dir / str(p) / f"{n}.csv"
+            try:
+                data[n] = np.loadtxt(file_path, delimiter=',', dtype=np.float32)
+            except Exception as e:
+                print(f"Error loading data for n={n} from {file_path}: {e}")
+                data[n] = None
     
     return data
 
-def compute_n_nu(neutron_number: int) -> int:
-    """中性子ボソン数 n_nu を計算（最近接の魔法数からの差/2）。"""
-    closest = min(CONFIG["nuclei"]["magic_numbers"], key=lambda x: abs(neutron_number - x))
-    return abs(neutron_number - closest) // 2
+def compute_n_nu(n: int) -> int:
+    closest_magic = min(CONFIG["nuclei"]["magic_numbers"], key=lambda x: abs(n - x))
+    return abs(n - closest_magic) // 2
+
+def prepare_training_dataset(raw_dict: dict[int, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    """ generate training dataset X, Y from raw_dict(N -> array[[beta, E(beta)], ...])
+    
+    X: (num_samples, 3) = [N, N_nu, beta]
+    Y: (num_samples, 1) = E(beta)
+    """
+    X_rows: list[list[float]] = []
+    Y_vals: list[float] = []
+    for N, arr in (raw_dict.items()):
+
+
 
 def build_training_arrays(raw_dict: dict[int, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
-    """raw_dict(N -> array[[beta, E], ...]) から X, Y を作成。
-
-    X: (num_samples, 3) = [N, n_nu, beta]
-    Y: (num_samples,)   = E(beta)
-    """
     X_rows: list[list[float]] = []
     Y_vals: list[float] = []
     for N, arr in sorted(raw_dict.items(), key=lambda kv: kv[0]):
