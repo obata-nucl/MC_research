@@ -3,10 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from utils import load_config
-
-CONFIG = load_config()
-
 class NN(nn.Module):
     def __init__(self, input_dim: int, hidden_dim: list[int], output_dim: int):
         super(NN, self).__init__()
