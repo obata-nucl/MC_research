@@ -3,14 +3,9 @@ import numpy as np
 
 from utils import load_config
 
-SETTINGS = {
-    "N_MIN": 86,
-    "N_MAX": 96,
-    "N_STEP": 2,
-}
 CONFIG = load_config()
 
-def load_raw_data(p_min: int, p_max: int, n_min: int, n_max: int, p_step: int,n_step: int) -> dict[int, np.ndarray]:
+def load_raw_data(p_min: int, p_max: int, n_min: int, n_max: int, p_step: int, n_step: int) -> dict[int, np.ndarray]:
     raw_dir = CONFIG["paths"]["raw_dir"]
     data = {}
     for p in range(p_min, p_max + 1, p_step):
@@ -18,7 +13,7 @@ def load_raw_data(p_min: int, p_max: int, n_min: int, n_max: int, p_step: int,n_
         for n in range(n_min, n_max + 1, n_step):
             file_path = file_dir / f"{n}.csv"
             try:
-                data[(p, n)] = np.loadtxt(file_path, delimiter=',', dtype=np.float32)
+                data[(p, n)] = np.loadtxt(file_path, delimiter=',')
             except Exception as e:
                 print(f"Error loading data for N = {n} from {file_path}: {e}")
                 data[(p, n)] = None
@@ -37,7 +32,7 @@ def prepare_training_dataset(raw_dict: dict[int, np.ndarray]) -> tuple[np.ndarra
     """
     X_rows: list[list[float]] = []
     Y_vals: list[float] = []
-    for (p, n), arr in (raw_dict.items()):
+    for (p, n), arr in raw_dict.items():
         if arr is None:
             continue
         if arr.ndim != 2 or arr.shape[1] < 2:
@@ -49,12 +44,12 @@ def prepare_training_dataset(raw_dict: dict[int, np.ndarray]) -> tuple[np.ndarra
         for beta, energy in zip(beta_arr, HFB_energies):
             X_rows.append([float(n), float(n_nu), float(beta)])
             Y_vals.append(float(energy))
-    X = np.array(X_rows, dtype=np.float32)
-    Y = np.array(Y_vals, dtype=np.float32)
+    X = np.array(X_rows)
+    Y = np.array(Y_vals)
     return X, Y
 
-def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str = "training") -> dict:
-    """processed ディレクトリに X/Y を保存（.npy と .csv）。"""
+def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str) -> dict:
+    """ save processed data X, Y to .npy and .csv files, return paths """
     processed_dir = CONFIG["paths"]["processed_dir"]
     processed_dir.mkdir(parents=True, exist_ok=True)
 
@@ -66,7 +61,7 @@ def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str = "training"
     paths["X"] = x_path
     paths["Y"] = y_path
 
-    # 検査・可視化向けにCSVも出力
+    # for convenience of inspection / visualization, also save as CSV
     csv_path = processed_dir / f"{basename}.csv"
     try:
         import csv
@@ -81,7 +76,17 @@ def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str = "training"
     return paths
 
 def main():
-    return
+    raw_data = load_raw_data(
+        CONFIG["nuclei"]["p_min"],
+        CONFIG["nuclei"]["p_max"],
+        CONFIG["nuclei"]["n_min"],
+        CONFIG["nuclei"]["n_max"],
+        CONFIG["nuclei"]["p_step"],
+        CONFIG["nuclei"]["n_step"],
+    )
+    X, Y = prepare_training_dataset(raw_data)
+    saved_paths = save_processed_data(X, Y, "training_data")
+    print(f"Processed data saved: {saved_paths}")
 
 if __name__ == "__main__":
     main()
