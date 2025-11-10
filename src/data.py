@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 from utils import load_config
 
@@ -73,6 +74,36 @@ def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str) -> dict:
     except Exception as e:
         print(f"[WARN] Failed to write CSV: {e}")
     return paths
+
+def _make_split_indices(X: torch.Tensor,
+                        val_ratio: float,
+                        seed: int) -> tuple:
+    """ make train/val split indices """
+    rng = np.random.default_rng(seed)
+
+    neutrons = X[:, 0].detach().cpu().numpy().astype(int)
+    unique_n = np.unique(neutrons)
+
+    idx_train: list[int] = []
+    idx_val: list[int] = []
+
+    for n in unique_n:
+        group_idx = np.where(neutrons == n)[0]
+        group_size = group_idx.size
+        if group_size == 0:
+            continue
+        rng.shuffle(group_idx)
+
+        raw_val_count = int(round(group_size * val_ratio))
+        val_count = max(0, min(group_size - 1, raw_val_count))
+
+        if val_count > 0:
+            idx_val.extend(group_idx[:val_count].tolist())
+        idx_train.extend(group_idx[val_count:].tolist())
+
+    idx_train = torch.tensor(idx_train, dtype=torch.long)
+    idx_val = torch.tensor(idx_val, dtype=torch.long)
+    return idx_train, idx_val
 
 def main():
     raw_data = load_raw_data(
