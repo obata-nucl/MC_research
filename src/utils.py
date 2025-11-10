@@ -18,3 +18,9 @@ def load_config():
     config["paths"] = abs_paths
 
     return config
+
+def _pattern_to_name(pattern: list[int]) -> str:
+    return '-'.join(map(str, pattern)) if isinstance(pattern, (list, tuple)) else str(pattern)
+
+def _parse_pattern_name(pattern_name: str) -> list[int]:
+    return [int(x) for x in str(pattern_name).split('-') if x]
