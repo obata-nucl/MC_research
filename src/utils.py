@@ -1,8 +1,7 @@
-import yaml
-
 from pathlib import Path
 
 def load_config():
+    import yaml
     root_dir = Path(__file__).resolve().parent.parent
     config_path = root_dir / "config.yml"
     try:
@@ -19,8 +18,18 @@ def load_config():
 
     return config
 
+def get_all_patterns(nodes_options: list[int], layers_options: list[int]) -> list[list[int]]:
+    import itertools
+    all_patterns = []
+    for num_layer in layers_options:
+        for nodes in itertools.product(nodes_options, repeat=num_layer):
+            all_patterns.append(list(nodes))
+    
+    return all_patterns
+
 def _pattern_to_name(pattern: list[int]) -> str:
     return '-'.join(map(str, pattern)) if isinstance(pattern, (list, tuple)) else str(pattern)
 
 def _parse_pattern_name(pattern_name: str) -> list[int]:
     return [int(x) for x in str(pattern_name).split('-') if x]
+

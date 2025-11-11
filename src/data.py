@@ -75,6 +75,15 @@ def save_processed_data(X: np.ndarray, Y: np.ndarray, basename: str) -> dict:
         print(f"[WARN] Failed to write CSV: {e}")
     return paths
 
+def load_processed_data():
+    """ load processed data X, Y from .npy files """
+    processed_dir = CONFIG["paths"]["processed_dir"]
+    x_path = processed_dir / "training_data_X.npy"
+    y_path = processed_dir / "training_data_Y.npy"
+    X = torch.from_numpy(np.load(x_path)).float()
+    Y = torch.from_numpy(np.load(y_path)).float().unsqueeze(1)
+    return X, Y
+
 def _make_split_indices(X: torch.Tensor,
                         val_ratio: float,
                         seed: int) -> tuple:
@@ -104,6 +113,16 @@ def _make_split_indices(X: torch.Tensor,
     idx_train = torch.tensor(idx_train, dtype=torch.long)
     idx_val = torch.tensor(idx_val, dtype=torch.long)
     return idx_train, idx_val
+
+def minmax_scaler(X: torch.Tensor):
+    min_x = X.min(dim=0, keepdim=True).values
+    max_x = X.max(dim=0, keepdim=True).values
+    range_x = max_x - min_x
+    range_x = torch.where(range_x == 0, torch.ones_like(range_x), range_x)
+    return min_x, range_x
+
+def apply_minmax_scaler(X: torch.Tensor, min_x: torch.Tensor, range_x: torch.Tensor) -> torch.Tensor:
+    return (X - min_x) / range_x
 
 def main():
     raw_data = load_raw_data(
