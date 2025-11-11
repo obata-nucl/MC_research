@@ -158,7 +158,7 @@ def run_training():
 
     args_lst = [
         (CONFIG["nn"]["input_dim"], pattern, CONFIG["nn"]["output_dim"],
-         X, X_scaled, Y, idx_train, idx_val, id, CONFIG["training"]["seed"])
+         X, X_scaled, Y, idx_train, idx_val, id, CONFIG["training"]["base_seed"])
          for id, pattern in enumerate(patterns)
     ]
 
