@@ -7,12 +7,12 @@ import torch
 import torch.optim as optim
 import torch.multiprocessing as mp_torch
 
-from data import _make_split_indices
+from data import _make_split_indices, load_processed_data, minmax_scaler, apply_minmax_scaler
 from losses import loss_fn
 from model import NN
 from pathlib import Path
 from torch.utils.data import TensorDataset, DataLoader
-from utils import load_config, _pattern_to_name
+from utils import load_config, get_all_patterns, _pattern_to_name
 
 CONFIG = load_config()
 
@@ -40,14 +40,14 @@ def train_worker(args):
     g.manual_seed(base_seed + process_id)
     train_loader = DataLoader(
         training_dataset,
-        batch_size=int(CONFIG["training"]["batch_size"]),
+        batch_size=CONFIG["training"]["batch_size"],
         shuffle=True,
         num_workers=0,
         generator=g,
     )
     val_loader = DataLoader(
         TensorDataset(X_val, X_scaled_val, Y_val),
-        batch_size=int(CONFIG["training"]["batch_size"]),
+        batch_size=CONFIG["training"]["batch_size"],
         shuffle=False,
         num_workers=0,
     )
@@ -76,8 +76,8 @@ def train_worker(args):
     
     best_val_loss = float("inf")
     no_improve = 0
-    num_epochs = int(CONFIG["training"]["num_epochs"])
-    early_patience = int(CONFIG["training"]["early_stopping_patience"])
+    num_epochs = CONFIG["training"]["num_epochs"]
+    early_patience = CONFIG["training"]["early_stopping_patience"]
     try:
         for epoch in range(num_epochs):
             model.train()
@@ -127,3 +127,42 @@ def train_worker(args):
                     break
     except Exception as e:
         print(f"[ERROR] Training failed: {e}")
+
+def run_training():
+    X, Y = load_processed_data()
+    idx_train, idx_val = _make_split_indices(X, val_ratio=CONFIG["training"]["val_ratio"], seed=CONFIG["training"]["seed"])
+
+    x_min, x_range = minmax_scaler(X)
+    X_scaled = apply_minmax_scaler(X, x_min, x_range)
+    try:
+        X.share_memory_()
+        X_scaled.share_memory_()
+        Y.share_memory_()
+        idx_train.share_memory_()
+        idx_val.share_memory_()
+    except Exception:
+        pass
+
+    patterns = get_all_patterns(CONFIG["nn"]["nodes_options"], CONFIG["nn"]["layers_options"])
+    num_patterns = len(patterns)
+    try:
+        torch.save({"min": x_min, "range": x_range}, CONFIG["paths"]["results_dir"] / "scaler.pt")
+    except Exception as e:
+        print(f"Error saving scaler: {e}")
+    
+    print(f"Total patterns to train: {num_patterns}")
+
+    args_lst = [
+        (CONFIG["nn"]["input_dim"], pattern, CONFIG["nn"]["output_dim"],
+         X, X_scaled, Y, idx_train, idx_val, id, CONFIG["training"]["seed"])
+         for id, pattern in enumerate(patterns)
+    ]
+
+    num_cpus = mp.cpu_count()
+    num_processes = max(1, num_cpus // 2)
+    print(f"Starting training with {num_processes} processes")
+    ctx = mp.get_context("spawn")
+    with ctx.Pool(processes=num_processes) as pool:
+        pool.map(train_worker, args_lst)
+    
+    print("Training completed for all patterns")
