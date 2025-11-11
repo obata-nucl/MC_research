@@ -30,6 +30,7 @@ def _seed_worker(seed: int, worker_id: int):
 
 def train_worker(args):
     input_dim, hidden_dims, output_dim, X, X_scaled, Y, idx_train, idx_val, process_id, base_seed = args
+    _set_seed(base_seed + process_id)
     print(f"Process {process_id} Training start. Pattern: {hidden_dims}")
 
     X_train, X_scaled_train, Y_train = X[idx_train], X_scaled[idx_train], Y[idx_train]
