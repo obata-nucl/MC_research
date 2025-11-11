@@ -121,8 +121,8 @@ def minmax_scaler(X: torch.Tensor):
     range_x = torch.where(range_x == 0, torch.ones_like(range_x), range_x)
     return min_x, range_x
 
-def apply_minmax_scaler(X: torch.Tensor, min_x: torch.Tensor, max_x: torch.Tensor) -> torch.Tensor:
-    return (X - min_x) / (max_x - min_x)
+def apply_minmax_scaler(X: torch.Tensor, min_x: torch.Tensor, range_x: torch.Tensor) -> torch.Tensor:
+    return (X - min_x) / range_x
 
 def main():
     raw_data = load_raw_data(
