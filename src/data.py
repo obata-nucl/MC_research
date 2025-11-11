@@ -81,7 +81,7 @@ def load_processed_data():
     x_path = processed_dir / "training_data_X.npy"
     y_path = processed_dir / "training_data_Y.npy"
     X = torch.from_numpy(np.load(x_path)).float()
-    Y = torch.from_numpy(np.load(y_path)).float().unsqueeze(1)
+    Y = torch.from_numpy(np.load(y_path)).float()
     return X, Y
 
 def _make_split_indices(X: torch.Tensor,
