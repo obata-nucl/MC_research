@@ -1,4 +1,5 @@
 from pathlib import Path
+import torch
 
 def load_config():
     import yaml
@@ -26,6 +27,13 @@ def get_all_patterns(nodes_options: list[int], layers_options: list[int]) -> lis
             all_patterns.append(list(nodes))
     
     return all_patterns
+
+def load_scaler(config):
+    scaler_path = config["paths"]["results_dir"] / "scaler.pt"
+    if not scaler_path.exists():
+        raise FileNotFoundError(f"Scaler file not found at {scaler_path}")
+    scaler = torch.load(scaler_path, map_location='cpu')
+    return scaler
 
 def _pattern_to_name(pattern: list[int]) -> str:
     return '-'.join(map(str, pattern)) if isinstance(pattern, (list, tuple)) else str(pattern)
