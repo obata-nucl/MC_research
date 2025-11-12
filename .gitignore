@@ -10,6 +10,6 @@ env/
 *.pyc
 
 # Data and Models
-data/*
+dataset/*
 models/*
 results/*

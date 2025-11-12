@@ -3,10 +3,10 @@
 # -----------------
 
 paths:
-  data_dir: "data/"
-  raw_dir: "data/raw/"
-  processed_dir: "data/processed/"
-  results_dir: "results/"
+  data_dir: "dataset/"
+  raw_dir: "dataset/raw/"
+  processed_dir: "dataset/processed/"
+  results_dir: "dataset/results/"
 
 # -----------------
 # 2. info about nuclei data
