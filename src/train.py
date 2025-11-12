@@ -10,7 +10,6 @@ import torch.multiprocessing as mp_torch
 from data import load_training_dataset, minmax_scaler, apply_minmax_scaler, _make_split_indices
 from losses import loss_fn
 from model import NN
-from pathlib import Path
 from torch.utils.data import TensorDataset, DataLoader, Subset
 from utils import load_config, get_all_patterns, _pattern_to_name
 
