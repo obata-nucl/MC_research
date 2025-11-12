@@ -7,7 +7,7 @@ import torch
 import torch.optim as optim
 import torch.multiprocessing as mp_torch
 
-from data import _make_split_indices, load_processed_data, minmax_scaler, apply_minmax_scaler
+from data import load_training_dataset, minmax_scaler, apply_minmax_scaler, _make_split_indices
 from losses import loss_fn
 from model import NN
 from pathlib import Path
@@ -133,7 +133,7 @@ def train_worker(args):
             print(f"[ERROR] Training failed: {e}")
 
 def run_training():
-    X, Y = load_processed_data()
+    X, Y = load_training_dataset()
     idx_train, idx_val = _make_split_indices(X, val_ratio=CONFIG["training"]["val_ratio"], seed=CONFIG["training"]["base_seed"])
 
     x_min, x_range = minmax_scaler(X[idx_train])

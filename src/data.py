@@ -58,7 +58,7 @@ def prepare_training_dataset(raw_dict: dict[int, np.ndarray]) -> tuple[np.ndarra
     Y = np.array(Y_vals)
     return X, Y
 
-def save_processed_dataset(X: np.ndarray, Y: np.ndarray, basename: str) -> dict:
+def save_training_dataset(X: np.ndarray, Y: np.ndarray, basename: str = "training_dataset") -> dict:
     """ save training data X, Y to .npy and .csv files, return paths """
     processed_dir = CONFIG["paths"]["processed_dir"]
     processed_dir.mkdir(parents=True, exist_ok=True)
@@ -85,11 +85,11 @@ def save_processed_dataset(X: np.ndarray, Y: np.ndarray, basename: str) -> dict:
         print(f"[WARN] Failed to write CSV: {e}")
     return paths
 
-def load_processed_dataset():
+def load_training_dataset():
     """ load processed data X, Y from .npy files """
     processed_dir = CONFIG["paths"]["processed_dir"]
-    x_path = processed_dir / "training_data_X.npy"
-    y_path = processed_dir / "training_data_Y.npy"
+    x_path = processed_dir / "training_dataset_X.npy"
+    y_path = processed_dir / "training_dataset_Y.npy"
     X = torch.from_numpy(np.load(x_path)).float()
     Y = torch.from_numpy(np.load(y_path)).float()
     return X, Y
@@ -199,8 +199,8 @@ def main():
         CONFIG["nuclei"]["n_step"],
     )
     X, Y = prepare_training_dataset(raw_data)
-    saved_paths = save_processed_dataset(X, Y, "training_data")
-    print(f"Processed data saved: {saved_paths}")
+    saved_paths = save_training_dataset(X, Y, "training_dataset")
+    print(f"Training data saved: {saved_paths}")
     X_eval = prepare_eval_dataset(raw_data)
     eval_paths = save_eval_dataset(X_eval, "eval_dataset")
     print(f"Eval data saved: {eval_paths}")
