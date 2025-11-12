@@ -25,7 +25,7 @@ class NN(nn.Module):
         chi_n = -F.softplus(out[:, 2])
         return torch.stack([eps, kappa, chi_n], dim=1)
 
-def get_NN_model(pattern: list[int]) -> NN:
+def load_NN_model(pattern: list[int]) -> NN:
     model_path = CONFIG["paths"]["results_dir"] / _pattern_to_name(pattern) / "best_model.pth"
     if not model_path.exists():
         raise FileNotFoundError(f"Model file not found at {model_path}")
