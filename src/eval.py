@@ -142,9 +142,9 @@ def main():
         for record in eval_summary:
             writer.writerow([
                 record["pattern"],
-                f"{record["energy_RMSE"]:.6f}",
-                f"{record["ratio_RMSE"]:.6f}",
-                f"{record["total_RMSE"]:.6f}",
+                f"{record['energy_RMSE']:.6f}",
+                f"{record['ratio_RMSE']:.6f}",
+                f"{record['total_RMSE']:.6f}",
             ])
     return
 
