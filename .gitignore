@@ -13,3 +13,4 @@ env/
 dataset/*
 models/*
 results/*
+NPBOS/*.dat
