@@ -12,7 +12,7 @@ from utils import load_config, get_all_patterns, _pattern_to_name
 
 CONFIG = load_config()
 
-def run_npbos(command: list[str], timeout_sec: float) -> tuple[str, str, int]:
+def run_npbos(command: list[str], timeout_sec: float=1.0) -> tuple[str, str, int]:
     """ run NPBOS programs and return IBM spectra as stdout, stderr, and return code """
     proc = None
     try:
@@ -78,7 +78,7 @@ def evaluate_model(X_eval: torch.Tensor, X_eval_scaled: torch.Tensor, pattern: l
             "bash", CONFIG["paths"]["src_dir"] / "eval.sh",
             str(CONFIG["paths"]["NPBOS_dir"]),
             str(int(n + 62)), str(int(n_nu)),
-            [f"`{param:.3f}" for param in pred_params]
+            *[f"{param:.3f}" for param in pred_params]
         ]
 
         stdout, stderr, rc = run_npbos(sh_command)
