@@ -10,7 +10,10 @@ env/
 *.pyc
 
 # Data and Models
-dataset/*
-models/*
-results/*
-NPBOS/*.dat
+/dataset/**
+/results/**
+/NPBOS/**
+
+!/dataset/.gitkeep
+!/results/.gitkeep
+!/NPBOS/.gitkeep
