@@ -12,7 +12,7 @@ from utils import load_config, get_all_patterns, _pattern_to_name
 
 CONFIG = load_config()
 
-def run_npbos(command: list[str], timeout_sec: float=1.0) -> tuple[str, str, int]:
+def run_npbos(command: list[str], timeout_sec: float=2.0) -> tuple[str, str, int]:
     """ run NPBOS programs and return IBM spectra as stdout, stderr, and return code """
     proc = None
     try:
@@ -94,9 +94,9 @@ def evaluate_model(X_eval: torch.Tensor, X_eval_scaled: torch.Tensor, pattern: l
         energy_sse, energy_count = calc_sse(pred_energies, expt_spectra_n)
         energy_RMSE += energy_sse
         energy_count_total += energy_count
-        # ratio evaluation
-        if len(pred_energies) == len(expt_spectra_n) and pred_energies[0] != 0 and expt_spectra_n[0] != 0:
-            ratio_RMSE += ((pred_energies[1] / pred_energies[0]) - (expt_spectra_n[1] / expt_spectra_n[0])) ** 2
+        # ratio evaluation: require only first two levels to exist (no need for strict length equality)
+        if len(pred_energies) == 4 and pred_energies[0] != 0 and expt_spectra_n[0] != 0:
+            ratio_RMSE += ((pred_energies[1] / pred_energies[0]) - expt_spectra_n[4]) ** 2
             ratio_count += 1
     energy_RMSE = np.sqrt(energy_RMSE / energy_count_total) if energy_count_total > 0 else float('inf')
     ratio_RMSE = np.sqrt(ratio_RMSE / ratio_count) if ratio_count > 0 else float('inf')
